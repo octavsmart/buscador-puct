@@ -216,10 +216,14 @@ if df is not None:
                     subgrupo_activo = subgrupos[0][0]
 
                 if not subgrupo_activo:
-                    # PASO 2: elegir subgrupo
+                    # PASO 2: elegir subgrupo — solo mostrar los que tienen coincidencia real
+                    subgrupos_con_match = [
+                        (fam, nombre_sg, etiq_sg) for fam, nombre_sg, etiq_sg in subgrupos
+                        if fam in fam_con_coincidencia
+                    ]
                     st.markdown(f"**Paso 1 →** {etiq_clase} &nbsp;&nbsp; **| Paso 2 — ¿Qué tipo?**")
-                    cols2 = st.columns(min(len(subgrupos), 4))
-                    for i, (fam, nombre_sg, etiq_sg) in enumerate(subgrupos):
+                    cols2 = st.columns(min(len(subgrupos_con_match), 4))
+                    for i, (fam, nombre_sg, etiq_sg) in enumerate(subgrupos_con_match):
                         col_idx = i % 4
                         if cols2[col_idx].button(etiq_sg, key=f"btn_sg_{fam}"):
                             st.session_state["subgrupo_filtro"] = fam
