@@ -152,6 +152,12 @@ if df is not None:
         )
         filas_detalle = df[mask_detalle]
 
+        # Respetar filtro de actividad si está seleccionado
+        if act_sel != "TODAS":
+            filas_detalle = filas_detalle[
+                filas_detalle[act_sel].astype(str).str.upper().str.strip() == "X"
+            ]
+
         if filas_detalle.empty:
             st.info("No se encontraron cuentas que contengan esa palabra.")
         else:
