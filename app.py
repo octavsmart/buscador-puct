@@ -107,7 +107,8 @@ if df is not None:
     def normalizar(texto):
         """Quita tildes y pasa a minúsculas para comparar sin acento."""
         return "".join(
-            c for c in unicodedata.normalize("NFD", str(texto))
+            c
+            for c in unicodedata.normalize("NFD", str(texto))
             if unicodedata.category(c) != "Mn"
         ).lower()
 
@@ -146,9 +147,8 @@ if df is not None:
     if query:
         query_norm = normalizar(query)
 
-        mask_detalle = (
-            nombres_norm.str.contains(query_norm, na=False)
-            & (df["CP"].astype(str).str.strip() != "")
+        mask_detalle = nombres_norm.str.contains(query_norm, na=False) & (
+            df["CP"].astype(str).str.strip() != ""
         )
         filas_detalle = df[mask_detalle]
 
@@ -165,7 +165,9 @@ if df is not None:
             fam_con_coincidencia = filas_detalle["FAMILIA"].unique()
 
             # Detectar en qué clases (C) aparecen los resultados
-            clases_encontradas = filas_detalle["C"].astype(str).str.strip().unique().tolist()
+            clases_encontradas = (
+                filas_detalle["C"].astype(str).str.strip().unique().tolist()
+            )
 
             # Resetear filtros si cambió la búsqueda
             if st.session_state.get("ultima_query") != query:
@@ -200,7 +202,19 @@ if df is not None:
 
                 # Construir etiquetas de subgrupo
                 def etiqueta_corta_sg(nombre_grupo):
-                    STOPWORDS = {"DE", "Y", "A", "EN", "DEL", "LA", "LOS", "LAS", "EL", "POR", "E"}
+                    STOPWORDS = {
+                        "DE",
+                        "Y",
+                        "A",
+                        "EN",
+                        "DEL",
+                        "LA",
+                        "LOS",
+                        "LAS",
+                        "EL",
+                        "POR",
+                        "E",
+                    }
                     palabras = nombre_grupo.upper().split()
                     claves = [p for p in palabras if p not in STOPWORDS]
                     return " ".join(claves[:2]).lower()
@@ -208,7 +222,8 @@ if df is not None:
                 subgrupos = []
                 for fam in fams_clase:
                     tit = df[
-                        (df["FAMILIA"] == fam) & (df["CP"].astype(str).str.strip() == "")
+                        (df["FAMILIA"] == fam)
+                        & (df["CP"].astype(str).str.strip() == "")
                     ]
                     if not tit.empty:
                         nombre_sg = str(tit.iloc[0]["NOMBRE DE LA CUENTA"]).strip()
@@ -224,10 +239,13 @@ if df is not None:
                 if not subgrupo_activo:
                     # PASO 2: elegir subgrupo — solo mostrar los que tienen coincidencia real
                     subgrupos_con_match = [
-                        (fam, nombre_sg, etiq_sg) for fam, nombre_sg, etiq_sg in subgrupos
+                        (fam, nombre_sg, etiq_sg)
+                        for fam, nombre_sg, etiq_sg in subgrupos
                         if fam in fam_con_coincidencia
                     ]
-                    st.markdown(f"**Paso 1 →** {etiq_clase} &nbsp;&nbsp; **| Paso 2 — ¿Qué tipo?**")
+                    st.markdown(
+                        f"**Paso 1 →** {etiq_clase} &nbsp;&nbsp; **| Paso 2 — ¿Qué tipo?**"
+                    )
                     cols2 = st.columns(min(len(subgrupos_con_match), 4))
                     for i, (fam, nombre_sg, etiq_sg) in enumerate(subgrupos_con_match):
                         col_idx = i % 4
@@ -242,7 +260,9 @@ if df is not None:
                             st.rerun()
                 else:
                     # PASO 3: mostrar resultado
-                    nombre_sg_activo = next((n for f, n, e in subgrupos if f == subgrupo_activo), "")
+                    nombre_sg_activo = next(
+                        (n for f, n, e in subgrupos if f == subgrupo_activo), ""
+                    )
                     st.markdown(f"**{etiq_clase}** › **{nombre_sg_activo}**")
                     if st.button("← volver a subgrupos"):
                         st.session_state["subgrupo_filtro"] = None
@@ -267,7 +287,19 @@ if df is not None:
         # Construir mapa familia -> etiqueta corta del subgrupo
         def etiqueta_corta(nombre_grupo):
             """Extrae palabras clave del nombre del grupo para etiqueta corta."""
-            STOPWORDS = {"DE", "Y", "A", "EN", "DEL", "LA", "LOS", "LAS", "EL", "POR", "E"}
+            STOPWORDS = {
+                "DE",
+                "Y",
+                "A",
+                "EN",
+                "DEL",
+                "LA",
+                "LOS",
+                "LAS",
+                "EL",
+                "POR",
+                "E",
+            }
             palabras = nombre_grupo.upper().split()
             claves = [p for p in palabras if p not in STOPWORDS]
             # Tomar hasta 2 palabras clave
@@ -298,4 +330,7 @@ if df is not None:
                     if row["CA"]
                     else "001"
                 )
-                st.code(f"{c}\t{g}\t{sg}\t{cp}\t{ca}\t{nombre}", language="text")
+                # Aquí agregamos .title() para cambiar únicamente el nombre en el cuadro gris
+                st.code(
+                    f"{c}\t{g}\t{sg}\t{cp}\t{ca}\t{nombre.title()}", language="text"
+                )
